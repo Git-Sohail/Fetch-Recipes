@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Finder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #FF5722;
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .search-container {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .search-box {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 50px;
+            overflow: hidden;
+        }
+        
+        #search-input {
+            flex-grow: 1;
+            padding: 15px 25px;
+            border: none;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        #search-button {
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            padding: 0 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        #search-button:hover {
+            background-color: #E64A19;
+        }
+        
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .recipe-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .recipe-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .recipe-content {
+            padding: 20px;
+        }
+        
+        .recipe-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .view-details {
+            display: inline-block;
+            background-color: #FF5722;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .view-details:hover {
+            background-color: #E64A19;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-50px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-header {
+            background-color: #FF5722;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .recipe-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .recipe-details {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .recipe-details img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        
+        .recipe-info h3 {
+            margin: 20px 0 10px;
+            color: #FF5722;
+        }
+        
+        .ingredients-list {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions {
+            line-height: 1.6;
+        }
+        
+        .error-message {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 18px;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">Recipe Finder</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search for recipes...">
+                <button id="search-button">Search</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Loading" width="50">
+            <p>Searching for delicious recipes...</p>
+        </div>
+        
+        <div id="results" class="results-container">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+    
+    <!-- Modal for recipe details -->
+    <div id="recipe-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-recipe-title">Recipe Title</h2>
+                <span class="close-modal" id="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-recipe-content">
+                <!-- Recipe details will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your actual API key
+        const apiKey = 'ab183750946f4bdb957323568bfaad42';
+        
+        // DOM elements
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const resultsContainer = document.getElementById('results');
+        const loadingElement = document.getElementById('loading');
+        const modal = document.getElementById('recipe-modal');
+        const modalTitle = document.getElementById('modal-recipe-title');
+        const modalContent = document.getElementById('modal-recipe-content');
+        const closeModal = document.getElementById('close-modal');
+        
+        // Event listeners
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        closeModal.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        // Function to perform search
+        function performSearch() {
+            const query = searchInput.value.trim();
+            if (query === '') return;
+            
+            loadingElement.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            
+            fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${query}&number=9&apiKey=${apiKey}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingElement.style.display = 'none';
+                    displayResults(data.results);
+                })
+                .catch(error => {
+                    loadingElement.style.display = 'none';
+                    console.error('Error:', error);
+                    resultsContainer.innerHTML = `
+                        <div class="error-message">
+                            <p>An error occurred while searching for recipes. Please try again.</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        // Function to display search results
+        function displayResults(recipes) {
+            if (recipes.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>No recipes found. Please try another search term.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            recipes.forEach(recipe => {
+                const recipeCard = document.createElement('div');
+                recipeCard.className = 'recipe-card';
+                recipeCard.innerHTML = `
+                    <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image">
+                    <div class="recipe-content">
+                        <h3 class="recipe-title">${recipe.title}</h3>
+                        <a href="#" class="view-details" data-recipe-id="${recipe.id}">View Details</a>
+                    </div>
+                `;
+                resultsContainer.appendChild(recipeCard);
+                
+                // Add click event to the "View Details" button
+                const viewDetailsButton = recipeCard.querySelector('.view-details');
+                viewDetailsButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const recipeId = this.getAttribute('data-recipe-id');
+                    getRecipeDetails(recipeId);
+                });
+            });
+        }
+        
+        // Function to get and display recipe details
+        function getRecipeDetails(recipeId) {
+            loadingElement.style.display = 'block';
+            
+            fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?apiKey=${apiKey}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(recipeData => {
+                    loadingElement.style.display = 'none';
+                    displayRecipeModal(recipeData);
+                })
+                .catch(error => {
+                    loadingElement.style.display = 'none';
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching recipe details.');
+                });
+        }
+        
+        // Function to display recipe details in modal
+        function displayRecipeModal(recipe) {
+            modalTitle.textContent = recipe.title;
+            
+            let ingredientsList = '';
+            recipe.extendedIngredients.forEach(ingredient => {
+                ingredientsList += `<li>${ingredient.original}</li>`;
+            });
+            
+            modalContent.innerHTML = `
+                <div class="recipe-details">
+                    <div>
+                        <img src="${recipe.image}" alt="${recipe.title}">
+                        <div class="recipe-meta">
+                            <h3>Quick Info</h3>
+                            <p><strong>Ready in:</strong> ${recipe.readyInMinutes} minutes</p>
+                            <p><strong>Servings:</strong> ${recipe.servings}</p>
+                            <p><strong>Health Score:</strong> ${recipe.healthScore}</p>
+                        </div>
+                    </div>
+                    <div class="recipe-info">
+                        <h3>Ingredients</h3>
+                        <ul class="ingredients-list">
+                            ${ingredientsList}
+                        </ul>
+                        <h3>Instructions</h3>
+                        <div class="instructions">
+                            ${recipe.instructions || "No instructions available for this recipe."}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+        
+        // Initial search with pasta to show some results
+        window.onload = function() {
+            searchInput.value = 'pasta';
+            performSearch();
+        };
+    </script>
+</body>
+</html>
